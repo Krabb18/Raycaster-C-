@@ -58,7 +58,7 @@ private:
 
     std::map<int,olc::Pixel> colorMap;
 
-    olc::Sprite* wallTexture = new olc::Sprite("textures/wallRay.png");
+    olc::Sprite* wallTexture = new olc::Sprite("textures/rayWall.png");
     olc::Sprite* objectSprite = new olc::Sprite("textures/obj.png");
 
     std::vector<GameObject> gameObjects;
@@ -76,8 +76,10 @@ public:
         colorMap[3] = olc::GREEN;
         colorMap[4] = olc::YELLOW;
 
-        playerPos.x = 3;
-        playerPos.y = 3;
+        playerPos.x = 4;
+        playerPos.y = 4;
+
+        //objectSprite->SetSize(32, 64);
 
         GameObject gameObj;
         gameObj.x = 10.5f;
@@ -266,58 +268,66 @@ public:
 
             }
 
-            //Object Drawing
-            /*
-            for(int i = 0; i<gameObjects.size(); i++)
-            {
-                float vecX = gameObjects[i].x - playerPos.x;
-                float vecY = gameObjects[i].y - playerPos.y;
-
-                float distanceToPlayer = sqrt(vecX * vecX + vecY * vecY);
-
-                float objectAngle = atan2f(fEyeY, fEyeX) - atan2f(vecX, vecY);
-                // to determine if the lamp is in the players field of view
-                
-                if (objectAngle < -3.14159f)
-                    objectAngle += 2.0f * 3.14159f;
-                if (objectAngle > 3.14159f)
-                    objectAngle -= 2.0f * 3.14159f;
-                
-                if(fabs(objectAngle) <= FOV/2.0f && distanceToPlayer < 16.0f && distanceToPlayer > 0.5f)
-                {
-                    //In Player FOV
-                    float fObjectCeiling = (float)(ScreenHeight() / 2.0) - ScreenHeight() / ((float)distanceToPlayer);
-                    float fObjectFloor = ScreenHeight() - fObjectCeiling;
-                    float fObjectHeight = fObjectFloor - fObjectCeiling;
-
-                    float fObjectAspectRatio = (float)gameObjects[i].sprite->width / (float)gameObjects[i].sprite->height;
-                    float fObjectWidth = fObjectHeight / fObjectAspectRatio;
-
-                    float fMiddleOfObject = (0.5f * (objectAngle / (FOV / 2.0f)) + 0.5f) * (float)ScreenWidth();
-
-                    for(int lx = 0; lx<fObjectWidth; lx++)
-                    {
-                        for(int ly = 0; ly<fObjectHeight; ly++)
-                        {
-                            int nObjectColumn = (int)(fMiddleOfObject + lx - (fObjectWidth / 2.0f));
-
-                            float fSampleX = lx / fObjectWidth;
-                            float fSampleY = ly / fObjectHeight;
-                            if (nObjectColumn >= 0 && nObjectColumn < ScreenWidth())
-                            {
-                                Draw(nObjectColumn, fObjectCeiling + ly, gameObjects[i].sprite->GetPixel(fSampleX* gameObjects[i].sprite->width, fSampleY* gameObjects[i].sprite->height));
-                            }
-
-                            
-                        }
-                    }
-
-                }
-                
-            }
-            */
+            
+            
 
             //Für pixel 0.0-1.0
+        }
+
+        //Object Drawing
+
+        for (int i = 0; i < gameObjects.size(); i++)
+        {
+            float vecX = gameObjects[i].x - playerPos.x;
+            float vecY = gameObjects[i].y - playerPos.y;
+
+            float distanceToPlayer = sqrtf(vecX * vecX + vecY * vecY);
+
+            float fEyeXA = sinf(playerA);
+            float fEyeYA = cosf(playerA);
+
+
+            float objectAngle = atan2f(fEyeYA, fEyeXA) - atan2f(vecY, vecX);
+            // to determine if the lamp is in the players field of view
+
+            if (objectAngle < -3.14159f)
+                objectAngle += 2.0f * 3.14159f;
+            if (objectAngle > 3.14159f)
+                objectAngle -= 2.0f * 3.14159f;
+
+            bool inPlayerFOV = fabs(objectAngle) < FOV / 2.0f;
+            if (inPlayerFOV && distanceToPlayer < 10.0f && distanceToPlayer > 2.5f)
+            {
+                //In Player FOV
+                float fObjectCeiling = (float)(ScreenHeight() / 2.0) - ScreenHeight() / ((float)distanceToPlayer);
+                float fObjectFloor = ScreenHeight() - fObjectCeiling;
+                float fObjectHeight = fObjectFloor - fObjectCeiling;
+
+                float fObjectAspectRatio = (float)gameObjects[i].sprite->height / (float)gameObjects[i].sprite->width;
+                float fObjectWidth = fObjectHeight / fObjectAspectRatio;
+
+                float fMiddleOfObject = (0.5f * (objectAngle / (FOV / 2.0f)) + 0.5f) * (float)ScreenWidth();
+
+                for (int lx = 0; lx < fObjectWidth; lx++)
+                {
+                    for (int ly = 0; ly < fObjectHeight; ly++)
+                    {
+                        int nObjectColumn = (int)(fMiddleOfObject + lx - (fObjectWidth / 2.0f));
+
+
+                        if (nObjectColumn >= 0 && nObjectColumn < ScreenWidth())
+                        {
+                            float fSampleX = lx / fObjectWidth;
+                            float fSampleY = ly / fObjectHeight;
+                            Draw(nObjectColumn, fObjectCeiling + ly, gameObjects[i].sprite->Sample(fSampleX, fSampleY));
+                        }
+
+
+                    }
+                }
+
+            }
+
         }
 
         return true;
