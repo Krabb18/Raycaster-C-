@@ -58,7 +58,9 @@ private:
 
     std::map<int,olc::Pixel> colorMap;
 
-    olc::Sprite* wallTexture = new olc::Sprite("textures/rayWall.png");
+    olc::Sprite* wallTexture = new olc::Sprite("textures/colorstone.png");
+    olc::Sprite *floorTexture = new olc::Sprite("textures/greystone.png");
+    olc::Sprite *ceilTexture = new olc::Sprite("textures/wood.png");
     olc::Sprite* objectSprite = new olc::Sprite("textures/obj.png");
 
     std::vector<GameObject> gameObjects;
@@ -129,6 +131,19 @@ public:
                 playerPos.y += cosf(playerA) * speed * dt;
             }
         }
+
+        
+        for(int y = 0; y<ScreenHeight();y++)
+        {
+            for (int x = 0; x < ScreenWidth(); ++x)
+            {
+                int p = y - ScreenHeight() / 2.0;
+                float posZ = 0.5f * (float)ScreenHeight();
+
+                float rowDistance = posZ / p;
+            }
+        }
+        
 
         for(int x = 0; x<ScreenWidth(); x++)
         {
@@ -251,7 +266,24 @@ public:
                 {
                     if (y <= nCeiling)
                     {
-                        Draw(x, y, olc::BLUE);
+                        double floorXWall, floorYWall;
+                        floorXWall = playerPos.x + fEyeX * distance;
+                        floorYWall = playerPos.y + fEyeY * distance;
+
+                        float currentDist = (float)ScreenHeight() / (2.0f * y - (float)ScreenHeight());
+                        currentDist = -currentDist;
+                        float distWall = distance;
+                        float distPlayer = 0.0;
+
+                        double weight = (currentDist) / (distWall);
+
+                        double currentFloorX = weight * floorXWall + (1.0 - weight) * playerPos.x;
+                        double currentFloorY = weight * floorYWall + (1.0 - weight) * playerPos.y;
+
+                        int floorTexX, floorTexY;
+                        floorTexX = int(currentFloorX * ceilTexture->width) % ceilTexture->width;
+                        floorTexY = int(currentFloorY * ceilTexture->height) % ceilTexture->height;
+                        Draw(x, y, ceilTexture->GetPixel(floorTexX, floorTexY));
                     }
                     else if(y > nCeiling && y <= nFloor)
                     {
@@ -262,7 +294,25 @@ public:
                     }
                     else
                     {
-                        Draw(x, y, olc::CYAN);
+                        //Draw(x, y, olc::CYAN);
+                        double floorXWall, floorYWall;
+                        floorXWall = playerPos.x + fEyeX * distance;
+                        floorYWall = playerPos.y + fEyeY * distance;
+
+                        float currentDist = (float)ScreenHeight() / (2.0f * y - (float)ScreenHeight());
+                        //currentDist = -currentDist;
+                        float distWall = distance;
+                        float distPlayer = 0.0;
+
+                        double weight = (currentDist) / (distWall);
+
+                        double currentFloorX = weight * floorXWall + (1.0 - weight) * playerPos.x;
+                        double currentFloorY = weight * floorYWall + (1.0 - weight) * playerPos.y;
+
+                        int floorTexX, floorTexY;
+                        floorTexX = int(currentFloorX * floorTexture->width) % floorTexture->width;
+                        floorTexY = int(currentFloorY * floorTexture->height) % floorTexture->height;
+                        Draw(x, y, floorTexture->GetPixel(floorTexX, floorTexY));
                     }
                 }
 
@@ -337,6 +387,8 @@ public:
     {
         delete wallTexture;
         delete objectSprite;
+        delete floorTexture;
+        delete ceilTexture;
         return true;
     }
 };
