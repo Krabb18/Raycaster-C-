@@ -26,7 +26,7 @@ private:
     olc::vf2d playerPos;
     float speed = 5.0f;
 
-
+    std::vector<float> depthBuffer;
    
     int map[mapWidth][mapHeight] =
     {
@@ -88,6 +88,9 @@ public:
         gameObj.y = 10.5f;
         gameObj.sprite = objectSprite;
         gameObjects.push_back(gameObj);
+
+        depthBuffer.resize(ScreenWidth());
+        //for (int x = 0; x < ScreenWidth(); x++) { depthBuffer[x] = 0; }
 
         return true;
     }
@@ -318,7 +321,7 @@ public:
 
             }
 
-            
+            depthBuffer[x] = distance;
             
 
             //Für pixel 0.0-1.0
@@ -367,11 +370,14 @@ public:
 
                         if (nObjectColumn >= 0 && nObjectColumn < ScreenWidth())
                         {
-                            float fSampleX = lx / fObjectWidth;
-                            float fSampleY = ly / fObjectHeight;
-                            Draw(nObjectColumn, fObjectCeiling + ly, gameObjects[i].sprite->Sample(fSampleX, fSampleY));
-                        }
+                            if (depthBuffer[nObjectColumn] > distanceToPlayer)
+                            {
+                                float fSampleX = lx / fObjectWidth;
+                                float fSampleY = ly / fObjectHeight;
+                                Draw(nObjectColumn, fObjectCeiling + ly, gameObjects[i].sprite->Sample(fSampleX, fSampleY));
+                            }
 
+                        }
 
                     }
                 }
